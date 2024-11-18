@@ -1,12 +1,14 @@
 import Veterinario from "../models/Veterinario.js";
 import generarJWT from "../helpers/generarJWT.js";
 import generarId from "../helpers/generarId.js";
+import emailRegistro from "../helpers/emailRegistro.js";
+import emailOlvidePassword from "../helpers/emailOlvidePassword.js";
 
 const registrar = async (req, res) => {
 
     console.log(req.body);
 
-    const { email} = req.body;
+    const { email, nombre} = req.body;
 
     // revisar si el email ya esta registrado
     const existeUsuario = await Veterinario.findOne({
@@ -22,6 +24,14 @@ const registrar = async (req, res) => {
         // save new veterinario
         const veterinario = new Veterinario(req.body);
         const veterinarioGuardado = await veterinario.save();
+
+        // enviar email de confirmacion
+
+        emailRegistro({
+            email,
+            nombre,
+            token: veterinarioGuardado.token
+        });
         
         res.json(veterinarioGuardado);
 
@@ -45,12 +55,13 @@ const confirmar = async (req, res) => {
     try {
         usuarioConfirmar.token = null;
         usuarioConfirmar.confirmado = true;
+        console.log('confirmar cuenta paso');
         await usuarioConfirmar.save();
         res.json({ msg: 'Usuario confirmado' });
     } catch (error) {
         console.error(error);
     }
-
+    console.log('confirmar cuenta paso');
     console.log(usuarioConfirmar);
 
 };
@@ -90,6 +101,8 @@ const olvidePassword = async (req, res) => {
         email
     });
 
+    
+
     if (!exiteVeterinario) {
         const error = new Error('El usuario no existe');
         return res.status(400).json({ msg: error.message });
@@ -98,6 +111,15 @@ const olvidePassword = async (req, res) => {
     try {
         exiteVeterinario.token = generarId();
         await exiteVeterinario.save();
+
+        // enviar email para reestablecer la contraseña
+
+        emailOlvidePassword({
+            email,
+            nombre: exiteVeterinario.nombre,
+            token: exiteVeterinario.token
+        });
+
         res.json({ msg: 'Se envio un email para reestablecer la contraseña' });
     } catch (error) {
         console.error(error);
@@ -109,7 +131,6 @@ const olvidePassword = async (req, res) => {
 
 const comprobarToken = async (req, res) => {
     const { token } = req.params;
-    
     const tokenValido = await Veterinario.findOne({
         token
     });
@@ -148,7 +169,7 @@ const nuevoPassword = async (req, res) => {
 
 const perfil = (req, res) => {
     const { veterinario } = req;
-    res.json({ veterinario }); 
+    res.json(veterinario ); 
 };
 
 
