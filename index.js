@@ -10,6 +10,10 @@ const app = express();
 app.use(express.json());
 dotenv.config();
 
+// Definir dominios permitidos
+// Comentar para user en desarrollo local, descomentar para produccion. 
+// para el uso de postman comentar
+
 const dominiosPermitidos = [process.env.FRONTEND_URL];
 const corsOptions = {
     origin: function(origin, callback){
@@ -22,6 +26,8 @@ const corsOptions = {
     }
 }
 app.use(cors(corsOptions))
+
+// Rutas
 
 app.use('/api/veterinarios', veterinarioRoutes);
 app.use('/api/pacientes', pacienteRoutes);

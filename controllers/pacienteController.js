@@ -9,9 +9,9 @@ const agregarPaciente = async (req, res) => {
         const pacienteGuardado = await paciente.save();
         res.status(201).json(pacienteGuardado);
     } catch (error) {
-        res.status(400).json({ error: error });
+        res.status(400).json({ msg: "Hubo un error" });
     }
-
+    
 }
 
 const obtenerPacientes = async (req, res) => {
